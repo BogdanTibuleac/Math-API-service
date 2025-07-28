@@ -39,10 +39,8 @@ streamlit run app.py
 ![Power Function](media/power_function.png)
 
 ### Fibonacci Visualization
-> Visual limited to `n ≤ 7`
 ![Fibonacci Function](media/fibonacci_function.png)
 
 ### Factorial Chain
-> Visual limited to `n ≤ 20`
 ![Factorial](media/factorial.png)
 
