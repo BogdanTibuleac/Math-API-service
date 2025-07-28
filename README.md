@@ -14,6 +14,7 @@ A FastAPI-based microservice for computing **power**, **fibonacci**, and **facto
 
 ---
 
+
 ## 🚀 Usage
 
 ### Run Locally
@@ -30,3 +31,18 @@ uvicorn main:app --reload
 
 # Start UI
 streamlit run app.py
+
+```
+## 📸 UI Visualizations
+
+### Power Function
+![Power Function](media/power_function.png)
+
+### Fibonacci Visualization
+> Visual limited to `n ≤ 7`
+![Fibonacci Function](media/fibonacci_function.png)
+
+### Factorial Chain
+> Visual limited to `n ≤ 20`
+![Factorial](media/factorial.png)
+
