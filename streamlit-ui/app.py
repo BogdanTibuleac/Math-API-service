@@ -2,7 +2,6 @@ import streamlit as st
 import requests
 import time
 import matplotlib.pyplot as plt
-import networkx as nx
 from math import pow
 import plotly.graph_objects as go
 
@@ -10,7 +9,6 @@ API_URL = "http://api:8000/api"
 
 st.set_page_config(page_title="Math API UI", page_icon="🧠", layout="wide")
 
-import plotly.graph_objects as go
 
 def render_power_plot(base: int, exponent: int):
     max_x = max(exponent, 20)
@@ -120,6 +118,7 @@ def render_power_plot(base: int, exponent: int):
 
     st.plotly_chart(fig, use_container_width=True)
 
+
 def render_fibonacci_graph(n: int):
     if n > 7:
         st.warning("Visualization limited to n ≤ 7.")
@@ -133,7 +132,8 @@ def render_fibonacci_graph(n: int):
 
     def add_node(n, depth=0, x=0.0, spread=1.0, parent=None):
         node_id = f"{n}_{len(nodes)}"
-        node = {"id": node_id, "label": f"Fib({n})", "x": x, "y": -depth, "parent": parent}
+        node = {"id": node_id, "label": f"Fib({n})",
+                "x": x, "y": -depth, "parent": parent}
         nodes.append(node)
         steps.append((node, parent))
         if parent:
@@ -221,6 +221,7 @@ def render_fibonacci_graph(n: int):
         time.sleep(0.4)
 
     st.success("🎉 Animation complete.")
+
 
 def render_factorial_chain(n: int):
     if n > 20:
@@ -312,7 +313,6 @@ with left:
     compute_btn = st.button("🚀 Compute")
 
 
-
 # ========== Compute & Visualization ==========
 with right:
     top_container = st.container()
@@ -335,16 +335,16 @@ with right:
                 elapsed = (end - start) * 1000
 
                 with top_container:
-                    st.success(f"{result['operation'].capitalize()} result: {result['result']}")
+                    operation = result['operation'].capitalize()
+                    output = result['result']
+                    st.success(f"{operation} result: {output}")
                     st.caption(f"⏱️ Completed in {elapsed:.2f} ms")
 
                 # Plot inside container to lock vertical height
                 with plot_container:
                     fig, ax = plt.subplots(figsize=(6, 3))
-
                     if operation == "Power" and exponent <= 20:
-                       render_power_plot(value, exponent)
-                       
+                        render_power_plot(value, exponent)
                     elif operation == "Fibonacci":
                         if value > 7:
                             st.warning("Tree visualization limited to n ≤ 7.")
@@ -360,3 +360,5 @@ with right:
             except Exception as e:
                 with top_container:
                     st.error(f"❌ {e}")
+
+# http://localhost:8501/

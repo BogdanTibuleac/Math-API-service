@@ -1,16 +1,19 @@
-from fastapi import FastAPI, HTTPException, Depends, Request
+from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel
 from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime
 from sqlalchemy.orm import sessionmaker, declarative_base, Session
 from datetime import datetime
-import math, logging
+import math
+import logging
 from functools import lru_cache
 import uvicorn
 import redis
 import os
 from concurrent.futures import ThreadPoolExecutor
 
-redis_client = redis.Redis(host=os.getenv("REDIS_HOST", "localhost"), port=6379, decode_responses=True)
+redis_client = redis.Redis(
+    host=os.getenv("REDIS_HOST", "localhost"),
+    port=6379, decode_responses=True)
 
 # ======================= CONFIG & INIT =======================
 DATABASE_URL = "sqlite:///./data/math_service.db"
@@ -23,7 +26,7 @@ logger = logging.getLogger("math_service")
 logging.basicConfig(level=logging.INFO)
 
 executor = ThreadPoolExecutor(max_workers=4)
-#http://localhost:8501/
+# http://localhost:8501/
 
 
 # ======================= MODELS =======================
@@ -35,17 +38,22 @@ class OperationLog(Base):
     result = Column(Float)
     timestamp = Column(DateTime, default=datetime.utcnow)
 
+
 Base.metadata.create_all(bind=engine)
+
 
 # ======================= SCHEMAS =======================
 class OperationRequest(BaseModel):
     value: int
     exponent: int | None = None
 
+
 class OperationResponse(BaseModel):
     operation: str
     input_value: str
+
     result: float
+
 
 # ======================= DB DEPENDENCY =======================
 def get_db():
@@ -54,6 +62,7 @@ def get_db():
         yield db
     finally:
         db.close()
+
 
 # ======================= CONTROLLERS =======================
 class MathService:
@@ -106,45 +115,68 @@ class MathService:
         self.log_operation("factorial", str(n), float(result))
         return float(result)
 
+
 # ======================= ROUTES =======================
 @app.get("/")
 async def read_root():
     return {"message": "Math API is running. Visit /docs for Swagger UI."}
 
+
 @app.post("/api/power", response_model=OperationResponse)
 async def compute_power(req: OperationRequest, db: Session = Depends(get_db)):
     if req.exponent is None:
-        raise HTTPException(status_code=400, detail="Exponent is required for power computation")
+        raise HTTPException(status_code=400,
+                            detail="Exponent is required for power computation")
     service = MathService(db)
-    result = service.power(req.value, req.exponent)
-    return OperationResponse(operation="power", input_value=f"{req.value}^{req.exponent}", result=result)
+    result = service.power(req.value,
+                           req.exponent)
+    return OperationResponse(
+        operation="power",
+        input_value=f"{req.value}^{req.exponent}",
+        result=result
+    )
+
 
 @app.post("/api/fibonacci", response_model=OperationResponse)
-async def compute_fibonacci(req: OperationRequest, db: Session = Depends(get_db)):
+async def compute_fibonacci(req: OperationRequest,
+                            db: Session = Depends(get_db)):
     service = MathService(db)
     result = service.fibonacci(req.value)
-    return OperationResponse(operation="fibonacci", input_value=str(req.value), result=result)
+    return OperationResponse(operation="fibonacci",
+                             input_value=str(req.value), result=result)
 
     service = MathService(db)
     try:
         result = service.factorial(req.value)
-        return OperationResponse(operation="factorial", input_value=str(req.value), result=result)
+        return OperationResponse(
+            operation="factorial",
+            input_value=str(req.value),
+            result=result
+        )
     except ValueError as ve:
         raise HTTPException(status_code=400, detail=str(ve))
-    except Exception as e:
+    except Exception:
         raise HTTPException(status_code=500, detail="Internal server error")
+
+
 @app.post("/api/factorial", response_model=OperationResponse)
 async def compute_factorial(req: OperationRequest, db: Session = Depends(get_db)):
     service = MathService(db)
     try:
         result = service.factorial(req.value)
-        return OperationResponse(operation="factorial", input_value=str(req.value), result=result)
+        return OperationResponse(
+            operation="factorial",
+            input_value=str(req.value),
+            result=result
+        )
+
     except ValueError as ve:
         logger.error(f"Validation error: {ve}")
         raise HTTPException(status_code=400, detail=str(ve))
-    except Exception as e:
+    except Exception:
         logger.exception("Unexpected error during factorial computation")
         raise HTTPException(status_code=500, detail="Internal server error")
+
 
 # ======================= ENTRY POINT =======================
 if __name__ == "__main__":
